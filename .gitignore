@@ -1,0 +1,6 @@
+node_modules/
+out/
+state.json
+*.log
+.env
+.signer-key-DO-NOT-COMMIT

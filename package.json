@@ -1,0 +1,19 @@
+{
+  "name": "dsafe-index-service",
+  "version": "0.1.0",
+  "description": "Watches Safe deployments on-chain and publishes a signed owner→Safes index to Swarm.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node --experimental-strip-types src/index.ts",
+    "once": "node --experimental-strip-types src/index.ts --once",
+    "dry-run": "node --experimental-strip-types src/index.ts --once --dry-run"
+  },
+  "dependencies": {
+    "@ethersphere/bee-js": "^9.8.1",
+    "viem": "^2.50.4"
+  }
+}
