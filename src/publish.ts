@@ -23,6 +23,15 @@ function bareId(value: { toString(): string }): string {
   return value.toString().toLowerCase().replace(/^0x/, '');
 }
 
+// Remaining batch lifetime in seconds. bee-js v9 exposes a `duration` Duration
+// object ({seconds}); older versions used a numeric `batchTTL`. Handle both.
+function batchSeconds(batch: any): number {
+  const d = batch.duration;
+  if (d && typeof d === 'object' && d.seconds != null) return Number(d.seconds);
+  if (typeof d === 'number') return d;
+  return Number(batch.batchTTL ?? 0);
+}
+
 async function selectBatch(bee: Bee): Promise<string | null> {
   const batches = await bee.getAllPostageBatch();
   let best: string | null = null;
@@ -31,7 +40,7 @@ async function selectBatch(bee: Bee): Promise<string | null> {
     if (!batch.usable) continue;
     const amount = typeof batch.amount === 'string' ? BigInt(batch.amount) : BigInt(batch.amount ?? 0);
     if (amount <= 0n) continue; // zero-balance batches can't pay for pushsync
-    const ttl = batch.batchTTL ?? 0;
+    const ttl = batchSeconds(batch);
     if (ttl > bestTtl) { best = toHex(batch.batchID); bestTtl = ttl; }
   }
   return best;
@@ -78,7 +87,7 @@ export async function createPublisher(
     async batchTtlDays() {
       const batches = await bee.getAllPostageBatch();
       const batch = batches.find(b => bareId(b.batchID) === bareId(batchId));
-      return batch ? Math.floor((batch.batchTTL ?? 0) / 86400) : 0;
+      return batch ? Math.floor(batchSeconds(batch) / 86400) : 0;
     },
   };
 }
