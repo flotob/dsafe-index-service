@@ -18,6 +18,11 @@ function toHex(value: { toString(): string }): string {
   return s.startsWith('0x') ? s : `0x${s}`;
 }
 
+// Batch ids arrive with or without a 0x prefix (env vs bee-js) — compare bare.
+function bareId(value: { toString(): string }): string {
+  return value.toString().toLowerCase().replace(/^0x/, '');
+}
+
 async function selectBatch(bee: Bee): Promise<string | null> {
   const batches = await bee.getAllPostageBatch();
   let best: string | null = null;
@@ -72,7 +77,7 @@ export async function createPublisher(
 
     async batchTtlDays() {
       const batches = await bee.getAllPostageBatch();
-      const batch = batches.find(b => toHex(b.batchID).toLowerCase() === batchId.toLowerCase());
+      const batch = batches.find(b => bareId(b.batchID) === bareId(batchId));
       return batch ? Math.floor((batch.batchTTL ?? 0) / 86400) : 0;
     },
   };
